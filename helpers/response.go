@@ -31,7 +31,11 @@ func ErrorResponse(w http.ResponseWriter, statusCode int, message string, err er
 	response := baseResponse{
 		Status:  false,
 		Message: message,
-		Error:   err.Error(),
 	}
+
+	if err != nil {
+		response.Error = err.Error()
+	}
+
 	json.NewEncoder(w).Encode(response)
 }

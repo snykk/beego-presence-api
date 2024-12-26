@@ -14,7 +14,10 @@ import (
 )
 
 func init() {
-	beego.Router("/users", &controllers.UserController{}, "get:GetAll;post:Create")
+	beego.Router("/auth/regis", &controllers.UserController{}, "post:Register")
+	beego.Router("/auth/login", &controllers.UserController{}, "post:Login")
+
+	beego.Router("/users", &controllers.UserController{}, "get:GetAll")
 	beego.Router("/users/:id", &controllers.UserController{}, "get:GetById;put:Update;delete:Delete")
 
 	beego.Router("/departments", &controllers.DepartmentController{}, "get:GetAll;post:Create")

@@ -4,8 +4,10 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/snykk/beego-presence-api/dto"
 	"github.com/snykk/beego-presence-api/helpers"
 	"github.com/snykk/beego-presence-api/models"
+	"golang.org/x/crypto/bcrypt"
 
 	beego "github.com/beego/beego/v2/server/web"
 )
@@ -32,22 +34,71 @@ func (c *UserController) GetById() {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, "User not found", err)
 		return
 	}
-	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User retrieved successfully", user)
+	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User retrieved successfully", map[string]interface{}{"users": user})
 }
 
-// @router /users [post]
-func (c *UserController) Create() {
-	var user models.User
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &user); err != nil {
+// @router /auth/regis [post]
+func (c *UserController) Register() {
+	var req dto.RegisterRequest
+	// Unmarshal request body ke dalam RegisterRequest struct
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input", err)
 		return
 	}
 
-	if err := models.CreateUser(&user); err != nil {
-		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to create user", err)
+	department, err := models.GetDepartmentById(req.Department)
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid department ID", err)
 		return
 	}
-	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusCreated, "User created successfully", user)
+
+	hashedPassword, err := helpers.HashPassword(req.Password)
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to hash password", err)
+		return
+	}
+
+	user := models.User{
+		Name:       req.Name,
+		Email:      req.Email,
+		Password:   hashedPassword,
+		Department: &department,
+	}
+
+	if err := models.CreateUser(&user); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to register user", err)
+		return
+	}
+
+	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusCreated, "User registered successfully", map[string]interface{}{"users": dto.FromUserModelToRegisterResponse(user)})
+}
+
+// @router /auth/login [post]
+func (c *UserController) Login() {
+	var credentials dto.LoginRequest
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &credentials); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input", err)
+		return
+	}
+
+	user, err := models.GetUserByEmail(credentials.Email)
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusUnauthorized, "Invalid credentials", nil)
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusUnauthorized, "Invalid credentials", nil)
+		return
+	}
+
+	token, err := helpers.GenerateJWT(user.Id, user.Email)
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to generate token", err)
+		return
+	}
+
+	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Login successful", map[string]string{"token": token})
 }
 
 // @router /users/:id [put]
@@ -68,7 +119,7 @@ func (c *UserController) Update() {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to update user", err)
 		return
 	}
-	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User updated successfully", user)
+	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User updated successfully", map[string]interface{}{"users": user})
 }
 
 // @router /users/:id [delete]

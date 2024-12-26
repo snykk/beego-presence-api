@@ -28,6 +28,13 @@ func GetAllUsers() ([]User, error) {
 	return users, err
 }
 
+func GetUserByEmail(email string) (User, error) {
+	o := orm.NewOrm()
+	user := User{Email: email}
+	err := o.Read(&user, "Email")
+	return user, err
+}
+
 func GetUserById(id int) (User, error) {
 	o := orm.NewOrm()
 	user := User{Id: id}
