@@ -36,5 +36,9 @@ func InitDB() {
 	if err != nil {
 		panic(err)
 	}
+
+	// Run Seeder
+	RunAllSeeds()
+
 	fmt.Println("Daatbase connected successfully!")
 }

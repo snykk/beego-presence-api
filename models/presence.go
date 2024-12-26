@@ -22,22 +22,33 @@ type Presence struct {
 // }
 
 // GetAllPresences retrieves all presence records
-func GetAllPresences() ([]Presence, error) {
+func GetAllPresences() ([]*Presence, error) {
 	o := orm.NewOrm()
-	var presences []Presence
-	_, err := o.QueryTable(new(Presence)).All(&presences)
+	var presences []*Presence
+	_, err := o.QueryTable(new(Presence)).RelatedSel("User", "Schedule").All(&presences)
 	return presences, err
 }
 
 // GetPresenceById retrieves a presence record by ID
 func GetPresenceById(id int) (*Presence, error) {
 	o := orm.NewOrm()
-	presence := Presence{Id: id}
-	err := o.Read(&presence)
-	if err == orm.ErrNoRows {
-		return nil, nil
+	presence := &Presence{Id: id}
+	err := o.Read(presence)
+	if err != nil {
+		return nil, err
 	}
-	return &presence, err
+
+	_, err = o.LoadRelated(presence, "User")
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = o.LoadRelated(presence, "Schedule")
+	if err != nil {
+		return nil, err
+	}
+
+	return presence, err
 }
 
 // CreatePresence inserts a new presence record

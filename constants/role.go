@@ -1,6 +1,6 @@
 package constants
 
 const (
-	RoleStudent = "STUDENT"
-	RoleAdmin   = "ADMIN"
+	RoleEmployee = "EMPLOYEE"
+	RoleAdmin    = "ADMIN"
 )

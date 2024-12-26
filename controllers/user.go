@@ -19,35 +19,70 @@ type UserController struct {
 
 // @router /users [get]
 func (c *UserController) GetAll() {
-	users, err := models.GetAllUsers()
+	isIncludeDepartment, err := c.GetBool("isIncludeDepartment", false) // Default to false if not provided
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludeDepartment", err)
+		return
+	}
+
+	isIncludePresenceList, err := c.GetBool("isIncludePresenceList", false) // Default to false if not provided
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludePresenceList", err)
+		return
+	}
+
+	isIncludeSchedule, err := c.GetBool("isIncludeSchedule", false) // Default to false if not provided
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludeSchedule", err)
+		return
+	}
+
+	users, err := models.GetAllUsers(isIncludePresenceList)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to fetch users", err)
 		return
 	}
-	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Users retrieved successfully", users)
+	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Users retrieved successfully", dto.FromUserModelListToUserResponseList(users, isIncludeDepartment, isIncludePresenceList, isIncludeSchedule))
 }
 
 // @router /users/:id [get]
 func (c *UserController) GetById() {
+	isIncludeDepartment, err := c.GetBool("isIncludeDepartment", false) // Default to false if not provided
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludeDepartment", err)
+		return
+	}
+
+	isIncludePresenceList, err := c.GetBool("isIncludePresenceList", false) // Default to false if not provided
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludePresenceList", err)
+		return
+	}
+
+	isIncludeSchedule, err := c.GetBool("isIncludeSchedule", false) // Default to false if not provided
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludeSchedule", err)
+		return
+	}
+
 	id, _ := c.GetInt(":id")
-	user, err := models.GetUserById(id)
+	user, err := models.GetUserById(id, isIncludePresenceList)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, "User not found", err)
 		return
 	}
-	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User retrieved successfully", map[string]interface{}{"users": user})
+	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User retrieved successfully", map[string]interface{}{"users": dto.FromUserModelToUserResponse(user, isIncludeDepartment, isIncludePresenceList, isIncludeSchedule)})
 }
 
 // @router /auth/regis [post]
 func (c *UserController) Register() {
 	var req dto.RegisterRequest
-	// Unmarshal request body ke dalam RegisterRequest struct
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input", err)
 		return
 	}
 
-	department, err := models.GetDepartmentById(req.Department)
+	department, err := models.GetDepartmentById(req.Department, false, false)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid department ID", err)
 		return
@@ -63,8 +98,8 @@ func (c *UserController) Register() {
 		Name:       req.Name,
 		Email:      req.Email,
 		Password:   hashedPassword,
-		Department: &department,
-		Role:       constants.RoleStudent, // default registered user is STUDENT
+		Department: department,
+		Role:       constants.RoleEmployee, // default registered user is EMPLOYEE
 	}
 
 	if err := models.CreateUser(&user); err != nil {
@@ -106,7 +141,7 @@ func (c *UserController) Login() {
 // @router /users/:id [put]
 func (c *UserController) Update() {
 	id, _ := c.GetInt(":id")
-	user, err := models.GetUserById(id)
+	user, err := models.GetUserById(id, false)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, "User not found", err)
 		return
@@ -117,11 +152,11 @@ func (c *UserController) Update() {
 		return
 	}
 
-	if err := models.UpdateUser(&user); err != nil {
+	if err := models.UpdateUser(user); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to update user", err)
 		return
 	}
-	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User updated successfully", map[string]interface{}{"users": user})
+	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User updated successfully", map[string]interface{}{"users": dto.FromUserModelToUserResponse(user, false, false, false)})
 }
 
 // @router /users/:id [delete]

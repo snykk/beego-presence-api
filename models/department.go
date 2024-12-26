@@ -7,30 +7,70 @@ import (
 )
 
 type Department struct {
-	Id        int         `orm:"auto" json:"id"`
-	Name      string      `orm:"size(100)" json:"name"`
-	Users     []*User     `orm:"reverse(many)" json:"users"`     // Reverse relationship with User
-	Schedules []*Schedule `orm:"reverse(many)" json:"schedules"` // Reverse relationship with Schedule
-	CreatedAt time.Time   `orm:"auto_now_add;type(datetime)" json:"created_at"`
-	UpdatedAt time.Time   `orm:"auto_now;type(datetime)" json:"updated_at"`
+	Id        int         `orm:"auto"`
+	Name      string      `orm:"size(100)"`
+	Users     []*User     `orm:"reverse(many)"` // Reverse relationship with User
+	Schedules []*Schedule `orm:"reverse(many)"` // Reverse relationship with Schedule
+	CreatedAt time.Time   `orm:"auto_now_add;type(datetime)"`
+	UpdatedAt time.Time   `orm:"auto_now;type(datetime)"`
 }
 
 // func init() {
 // 	orm.RegisterModel(new(Department))
 // }
 
-func GetAllDepartments() ([]Department, error) {
+func GetAllDepartments(isIncludeUserList, isIncludeScheduleList bool) ([]*Department, error) {
 	o := orm.NewOrm()
-	var departments []Department
+	var departments []*Department
+	// Fetch all departments
 	_, err := o.QueryTable(new(Department)).All(&departments)
-	return departments, err
+	if err != nil {
+		return nil, err
+	}
+
+	// Load related Users and Schedules for each department
+	for i := range departments {
+		if isIncludeUserList {
+			_, err = o.LoadRelated(departments[i], "Users")
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if isIncludeScheduleList {
+			_, err = o.LoadRelated(departments[i], "Schedules")
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return departments, nil
 }
 
-func GetDepartmentById(id int) (Department, error) {
+func GetDepartmentById(id int, isIncludeUserList, isIncludeScheduleList bool) (*Department, error) {
 	o := orm.NewOrm()
-	department := Department{Id: id}
-	err := o.Read(&department)
-	return department, err
+	department := &Department{Id: id}
+	err := o.Read(department)
+	if err != nil {
+		return nil, err
+	}
+
+	if isIncludeUserList {
+		_, err = o.LoadRelated(department, "Users")
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if isIncludeScheduleList {
+		_, err = o.LoadRelated(department, "Schedules")
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return department, nil
 }
 
 func CreateDepartment(department *Department) error {

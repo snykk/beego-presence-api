@@ -11,6 +11,8 @@ require (
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd
 )
 
+require github.com/google/go-cmp v0.6.0 // indirect
+
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect

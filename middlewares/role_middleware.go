@@ -65,7 +65,7 @@ func isRestrictedAccess(url, method, role string) bool {
 	if strings.Contains(url, "/presences") {
 		if method == "POST" {
 			// Only allow users to access the POST method for creating a presence
-			return role != constants.RoleStudent
+			return role != constants.RoleEmployee
 		} else if method == "PUT" || method == "DELETE" {
 			// Only allow admins to access PUT and DELETE methods for updating or deleting presence
 			return role != constants.RoleAdmin
