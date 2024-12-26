@@ -7,12 +7,12 @@ import (
 )
 
 type Department struct {
-	Id        int         `orm:"auto"`
-	Name      string      `orm:"size(100)"`
-	Users     []*User     `orm:"reverse(many)"` // Reverse relationship with User
-	Schedules []*Schedule `orm:"reverse(many)"` // Reverse relationship with Schedule
-	CreatedAt time.Time   `orm:"auto_now_add;type(datetime)"`
-	UpdatedAt time.Time   `orm:"auto_now;type(datetime)"`
+	Id        int         `orm:"auto" json:"id"`
+	Name      string      `orm:"size(100)" json:"name"`
+	Users     []*User     `orm:"reverse(many)" json:"users"`     // Reverse relationship with User
+	Schedules []*Schedule `orm:"reverse(many)" json:"schedules"` // Reverse relationship with Schedule
+	CreatedAt time.Time   `orm:"auto_now_add;type(datetime)" json:"created_at"`
+	UpdatedAt time.Time   `orm:"auto_now;type(datetime)" json:"updated_at"`
 }
 
 // func init() {

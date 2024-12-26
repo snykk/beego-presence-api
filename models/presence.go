@@ -8,13 +8,13 @@ import (
 
 // Presence represents the presence table in the database
 type Presence struct {
-	Id        int       `orm:"auto"`
-	User      *User     `orm:"rel(fk)"` // ForeignKey to User
-	Schedule  *Schedule `orm:"rel(fk)"` // ForeignKey to Schedule
-	Type      string    `orm:"size(10)"`
-	Status    string    `orm:"size(50)"`
-	CreatedAt time.Time `orm:"auto_now_add;type(datetime)"`
-	UpdatedAt time.Time `orm:"auto_now;type(datetime)"`
+	Id        int       `orm:"auto" json:"id"`
+	User      *User     `orm:"rel(fk)" json:"user"`     // ForeignKey to User
+	Schedule  *Schedule `orm:"rel(fk)" json:"schedule"` // ForeignKey to Schedule
+	Type      string    `orm:"size(10)" json:"type"`
+	Status    string    `orm:"size(50)" json:"status"`
+	CreatedAt time.Time `orm:"auto_now_add;type(datetime)" json:"created_at"`
+	UpdatedAt time.Time `orm:"auto_now;type(datetime)" json:"updated_at"`
 }
 
 // func init() {

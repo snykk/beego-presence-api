@@ -7,14 +7,14 @@ import (
 )
 
 type User struct {
-	Id         int         `orm:"auto"`
-	Name       string      `orm:"size(100)"`
-	Email      string      `orm:"size(100);unique"`
-	Password   string      `orm:"size(255)"`
-	Department *Department `orm:"rel(fk);column(department_id)"` // ForeignKey to Department
-	Presences  []*Presence `orm:"reverse(many)"`                 // Reverse relationship with Presence
-	CreatedAt  time.Time   `orm:"auto_now_add;type(datetime)"`
-	UpdatedAt  time.Time   `orm:"auto_now;type(datetime)"`
+	Id         int         `orm:"auto" json:"id"`
+	Name       string      `orm:"size(100)" json:"name"`
+	Email      string      `orm:"size(100);unique" json:"email"`
+	Password   string      `orm:"size(255)" json:"password"`
+	Department *Department `orm:"rel(fk);column(department_id)" json:"department"` // ForeignKey to Department
+	Presences  []*Presence `orm:"reverse(many)" json:"presences"`                  // Reverse relationship with Presence
+	CreatedAt  time.Time   `orm:"auto_now_add;type(datetime)" json:"created_at"`
+	UpdatedAt  time.Time   `orm:"auto_now;type(datetime)" json:"updated_at"`
 }
 
 // func init() {
