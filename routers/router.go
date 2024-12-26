@@ -14,17 +14,15 @@ import (
 )
 
 func init() {
-	ns := beego.NewNamespace("/v1",
-		beego.NSNamespace("/object",
-			beego.NSInclude(
-				&controllers.ObjectController{},
-			),
-		),
-		beego.NSNamespace("/user",
-			beego.NSInclude(
-				&controllers.UserController{},
-			),
-		),
-	)
-	beego.AddNamespace(ns)
+	beego.Router("/users", &controllers.UserController{}, "get:GetAll;post:Create")
+	beego.Router("/users/:id", &controllers.UserController{}, "get:GetById;put:Update;delete:Delete")
+
+	beego.Router("/departments", &controllers.DepartmentController{}, "get:GetAll;post:Create")
+	beego.Router("/departments/:id", &controllers.DepartmentController{}, "get:GetById;put:Update;delete:Delete")
+
+	beego.Router("/schedules", &controllers.ScheduleController{}, "get:GetAll;post:Create")
+	beego.Router("/schedules/:id", &controllers.ScheduleController{}, "get:GetById;put:Update;delete:Delete")
+
+	beego.Router("/presences", &controllers.PresenceController{}, "get:GetAll;post:Create")
+	beego.Router("/presences/:id", &controllers.PresenceController{}, "get:GetById;put:Update;delete:Delete")
 }
