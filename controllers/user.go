@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/snykk/beego-presence-api/constants"
 	"github.com/snykk/beego-presence-api/dto"
 	"github.com/snykk/beego-presence-api/helpers"
 	"github.com/snykk/beego-presence-api/models"
@@ -63,6 +64,7 @@ func (c *UserController) Register() {
 		Email:      req.Email,
 		Password:   hashedPassword,
 		Department: &department,
+		Role:       constants.RoleStudent, // default registered user is STUDENT
 	}
 
 	if err := models.CreateUser(&user); err != nil {
@@ -92,7 +94,7 @@ func (c *UserController) Login() {
 		return
 	}
 
-	token, err := helpers.GenerateJWT(user.Id, user.Email)
+	token, err := helpers.GenerateJWT(user.Id, user.Email, user.Role)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to generate token", err)
 		return

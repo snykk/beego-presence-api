@@ -1,19 +1,15 @@
-// @APIVersion 1.0.0
-// @Title beego Test API
-// @Description beego has a very cool tools to autogenerate documents for your API
-// @Contact astaxie@gmail.com
-// @TermsOfServiceUrl http://beego.me/
-// @License Apache 2.0
-// @LicenseUrl http://www.apache.org/licenses/LICENSE-2.0.html
 package routers
 
 import (
-	"github.com/snykk/beego-presence-api/controllers"
-
 	beego "github.com/beego/beego/v2/server/web"
+	"github.com/snykk/beego-presence-api/controllers"
+	"github.com/snykk/beego-presence-api/middlewares"
 )
 
 func init() {
+	beego.InsertFilter("/*", beego.BeforeRouter, middlewares.RoleBasedMiddleware()) // Apply to all other routes
+
+	// Define routes
 	beego.Router("/auth/regis", &controllers.UserController{}, "post:Register")
 	beego.Router("/auth/login", &controllers.UserController{}, "post:Login")
 

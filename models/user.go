@@ -11,6 +11,7 @@ type User struct {
 	Name       string      `orm:"size(100)" json:"name"`
 	Email      string      `orm:"size(100);unique" json:"email"`
 	Password   string      `orm:"size(255)" json:"password"`
+	Role       string      `orm:"size(10)" json:"role"`
 	Department *Department `orm:"rel(fk);column(department_id)" json:"department"` // ForeignKey to Department
 	Presences  []*Presence `orm:"reverse(many)" json:"presences"`                  // Reverse relationship with Presence
 	CreatedAt  time.Time   `orm:"auto_now_add;type(datetime)" json:"created_at"`
