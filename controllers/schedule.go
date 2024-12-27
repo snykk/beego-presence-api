@@ -111,6 +111,16 @@ func (c *ScheduleController) Create() {
 // @router /schedules/:id [put]
 func (c *ScheduleController) Update() {
 	id, _ := c.GetInt(":id")
+	existedSchedule, err := models.GetScheduleById(id, false, false)
+	if existedSchedule == nil && err != nil {
+		if err == orm.ErrNoRows {
+			helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch schedule with id %d", id), fmt.Errorf("schedule '%d' not found", id))
+			return
+		}
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch schedule with id %d", id), err)
+		return
+	}
+
 	var req dto.ScheduleRequest
 	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input", err)
@@ -119,16 +129,6 @@ func (c *ScheduleController) Update() {
 
 	if errorsMap, err := helpers.ValidatePayloads(req); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, constants.ErrValidationMessage, errorsMap)
-		return
-	}
-
-	existedSchedule, err := models.GetScheduleById(id, false, false)
-	if existedSchedule == nil && err != nil {
-		if err == orm.ErrNoRows {
-			helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch schedule with id %d", id), fmt.Errorf("schedule '%d' not found", id))
-			return
-		}
-		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch schedule with id %d", id), err)
 		return
 	}
 

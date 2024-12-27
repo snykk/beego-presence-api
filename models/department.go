@@ -85,8 +85,8 @@ func UpdateDepartment(department *Department) error {
 	return err
 }
 
-func DeleteDepartment(id int) error {
+func DeleteDepartment(id int) (int64, error) {
 	o := orm.NewOrm()
-	_, err := o.Delete(&Department{Id: id})
-	return err
+	affectedRows, err := o.Delete(&Department{Id: id})
+	return affectedRows, err
 }

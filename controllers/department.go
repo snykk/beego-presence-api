@@ -2,12 +2,15 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"github.com/snykk/beego-presence-api/constants"
 	"github.com/snykk/beego-presence-api/dto"
 	"github.com/snykk/beego-presence-api/helpers"
 	"github.com/snykk/beego-presence-api/models"
 
+	"github.com/beego/beego/v2/client/orm"
 	beego "github.com/beego/beego/v2/server/web"
 )
 
@@ -69,11 +72,18 @@ func (c *DepartmentController) GetById() {
 
 // @router /departments [post]
 func (c *DepartmentController) Create() {
-	var department *models.Department
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &department); err != nil {
+	var req *dto.DepartmentRequest
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, req); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input", err)
 		return
 	}
+
+	if errorsMap, err := helpers.ValidatePayloads(req); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, constants.ErrValidationMessage, errorsMap)
+		return
+	}
+
+	department := req.ToDepartmentModel()
 
 	if err := models.CreateDepartment(department); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to create department", err)
@@ -85,16 +95,28 @@ func (c *DepartmentController) Create() {
 // @router /departments/:id [put]
 func (c *DepartmentController) Update() {
 	id, _ := c.GetInt(":id")
-	department, err := models.GetDepartmentById(id, false, false)
-	if err != nil {
-		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, "Department not found", err)
+	existedDepartment, err := models.GetDepartmentById(id, false, false)
+	if existedDepartment == nil && err != nil {
+		if err == orm.ErrNoRows {
+			helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch department with id %d", id), fmt.Errorf("department '%d' not found", id))
+			return
+		}
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch department with id %d", id), err)
 		return
 	}
 
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, department); err != nil {
+	var req *dto.DepartmentRequest
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, req); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input", err)
 		return
 	}
+
+	if errorsMap, err := helpers.ValidatePayloads(req); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, constants.ErrValidationMessage, errorsMap)
+		return
+	}
+
+	department := req.ToDepartmentModelWithValue(existedDepartment)
 
 	if err := models.UpdateDepartment(department); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to update department", err)
@@ -105,10 +127,22 @@ func (c *DepartmentController) Update() {
 
 // @router /departments/:id [delete]
 func (c *DepartmentController) Delete() {
-	id, _ := c.GetInt(":id")
-	if err := models.DeleteDepartment(id); err != nil {
+	id, err := c.GetInt(":id")
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid department id", err)
+		return
+	}
+
+	affectedRows, err := models.DeleteDepartment(id)
+	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to delete department", err)
 		return
 	}
-	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusNoContent, "Department deleted successfully", nil)
+
+	if affectedRows == 0 {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, "Department not found", fmt.Errorf("department '%d' not found", id))
+		return
+	}
+
+	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Department deleted successfully", nil)
 }
