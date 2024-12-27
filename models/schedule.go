@@ -56,20 +56,20 @@ func GetScheduleById(id int, isIncludePresenceList, isIncludeUserList bool) (*Sc
 		return nil, err
 	}
 
-	_, err = o.LoadRelated(&schedule, "Department")
+	_, err = o.LoadRelated(schedule, "Department")
 	if err != nil {
 		return nil, err
 	}
 
 	if isIncludePresenceList {
-		_, err = o.LoadRelated(&schedule, "Presences")
+		_, err = o.LoadRelated(schedule, "Presences")
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if isIncludeUserList {
-		_, err = o.LoadRelated(&schedule, "Presences")
+		_, err = o.LoadRelated(schedule, "Presences")
 		if err != nil {
 			return nil, err
 		}

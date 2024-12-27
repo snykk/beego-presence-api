@@ -2,6 +2,7 @@ package middlewares
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/snykk/beego-presence-api/constants"
@@ -79,6 +80,8 @@ func isRestrictedAccess(url, method, role string) bool {
 	// Check if the URL contains "/presences"
 	if strings.Contains(url, "/presences") {
 		if method == "POST" {
+			fmt.Println("role", role)
+			fmt.Println("constants.RoleEmployee", constants.RoleEmployee)
 			// Only allow users to access the POST method for creating a presence
 			return role != constants.RoleEmployee
 		} else if method == "PUT" || method == "DELETE" {

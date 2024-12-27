@@ -152,16 +152,16 @@ func SeedSchedules() {
 
 		schedules := []models.Schedule{
 			// Engineering Department
-			{Name: "Software Development Shift", Department: &departments[0], InTime: "09:00", OutTime: "17:00"},
-			{Name: "Maintenance and Support", Department: &departments[0], InTime: "18:00", OutTime: "02:00"},
+			{Name: "Software Development Shift", Department: &departments[0], InTime: "09:00:00", OutTime: "17:00:00"},
+			{Name: "Maintenance and Support", Department: &departments[0], InTime: "18:00:00", OutTime: "02:00:00"},
 
 			// Human Resources Department
-			{Name: "Recruitment and Interviews", Department: &departments[1], InTime: "10:00", OutTime: "16:00"},
-			{Name: "HR Administration", Department: &departments[1], InTime: "08:00", OutTime: "15:00"},
+			{Name: "Recruitment and Interviews", Department: &departments[1], InTime: "10:00:00", OutTime: "16:00:00"},
+			{Name: "HR Administration", Department: &departments[1], InTime: "08:00:00", OutTime: "15:00:00"},
 
 			// Marketing Department
-			{Name: "Campaign Planning", Department: &departments[2], InTime: "09:30", OutTime: "17:30"},
-			{Name: "Client Meetings and Networking", Department: &departments[2], InTime: "11:00", OutTime: "19:00"},
+			{Name: "Campaign Planning", Department: &departments[2], InTime: "09:30:00", OutTime: "17:30:00"},
+			{Name: "Client Meetings and Networking", Department: &departments[2], InTime: "11:00:00", OutTime: "19:00:00"},
 		}
 
 		for _, schedule := range schedules {
