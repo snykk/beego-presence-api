@@ -29,10 +29,17 @@ func RoleBasedMiddleware() web.FilterFunc {
 		// Extract the token part (remove the "Bearer " prefix)
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 
-		// Validate the token and extract the role
-		role, err := helpers.GetRoleFromToken(token)
+		// Validate the token
+		claims, err := helpers.ParseJWT(token)
 		if err != nil {
 			helpers.ErrorResponse(ctx.ResponseWriter, 401, "Unauthorized or expired token", err)
+			return
+		}
+
+		//  extract the role from claiams
+		userRole, err := helpers.GetRoleFromMapClaims(claims)
+		if err != nil {
+			helpers.ErrorResponse(ctx.ResponseWriter, 500, "Internal server error", err)
 			return
 		}
 
@@ -41,13 +48,21 @@ func RoleBasedMiddleware() web.FilterFunc {
 		method := ctx.Request.Method
 
 		// Check if access is restricted for the current role based on the endpoint and method
-		if isRestrictedAccess(url, method, role) {
+		if isRestrictedAccess(url, method, userRole) {
 			helpers.ErrorResponse(ctx.ResponseWriter, 403, "Forbidden", errors.New("access denied"))
 			return
 		}
 
+		//  extract the role from claiams
+		userId, err := helpers.GetUseridFromMapClaims(claims)
+		if err != nil {
+			helpers.ErrorResponse(ctx.ResponseWriter, 500, "Internal server error", err)
+			return
+		}
+
 		// Continue to the next handler
-		ctx.Input.SetData("role", role)
+		ctx.Input.SetData(constants.CtxAuthenticatedUserId, userId)
+		ctx.Input.SetData(constants.CtxAuthenticatedUserRole, userRole)
 	}
 }
 

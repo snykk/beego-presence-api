@@ -41,15 +41,18 @@ func ParseJWT(tokenString string) (claims jwt.MapClaims, err error) {
 	return
 }
 
-func GetRoleFromToken(tokenString string) (string, error) {
-	claims, err := ParseJWT(tokenString)
-	if err != nil {
-		return "", err
-	}
-
+func GetRoleFromMapClaims(claims jwt.MapClaims) (string, error) {
 	if role, exists := claims["role"]; exists {
 		return role.(string), nil
 	}
 
-	return "", errors.New("role not found in token")
+	return "", errors.New("role not found in claims")
+}
+
+func GetUseridFromMapClaims(claims jwt.MapClaims) (int, error) {
+	if userId, exists := claims["sub"]; exists {
+		return int(userId.(float64)), nil
+	}
+
+	return 0, errors.New("userId not found in claims")
 }

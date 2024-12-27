@@ -2,6 +2,8 @@ package controllers
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/snykk/beego-presence-api/constants"
@@ -10,6 +12,7 @@ import (
 	"github.com/snykk/beego-presence-api/models"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/beego/beego/v2/client/orm"
 	beego "github.com/beego/beego/v2/server/web"
 )
 
@@ -19,19 +22,19 @@ type UserController struct {
 
 // @router /users [get]
 func (c *UserController) GetAll() {
-	isIncludeDepartment, err := c.GetBool("isIncludeDepartment", false) // Default to false if not provided
+	isIncludeDepartment, err := c.GetBool("isIncludeDepartment", false)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludeDepartment", err)
 		return
 	}
 
-	isIncludePresenceList, err := c.GetBool("isIncludePresenceList", false) // Default to false if not provided
+	isIncludePresenceList, err := c.GetBool("isIncludePresenceList", false)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludePresenceList", err)
 		return
 	}
 
-	isIncludeSchedule, err := c.GetBool("isIncludeSchedule", false) // Default to false if not provided
+	isIncludeSchedule, err := c.GetBool("isIncludeSchedule", false)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludeSchedule", err)
 		return
@@ -42,24 +45,25 @@ func (c *UserController) GetAll() {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to fetch users", err)
 		return
 	}
+
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Users retrieved successfully", dto.FromUserModelListToUserResponseList(users, isIncludeDepartment, isIncludePresenceList, isIncludeSchedule))
 }
 
 // @router /users/:id [get]
 func (c *UserController) GetById() {
-	isIncludeDepartment, err := c.GetBool("isIncludeDepartment", false) // Default to false if not provided
+	isIncludeDepartment, err := c.GetBool("isIncludeDepartment", false)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludeDepartment", err)
 		return
 	}
 
-	isIncludePresenceList, err := c.GetBool("isIncludePresenceList", false) // Default to false if not provided
+	isIncludePresenceList, err := c.GetBool("isIncludePresenceList", false)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludePresenceList", err)
 		return
 	}
 
-	isIncludeSchedule, err := c.GetBool("isIncludeSchedule", false) // Default to false if not provided
+	isIncludeSchedule, err := c.GetBool("isIncludeSchedule", false)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid value for isIncludeSchedule", err)
 		return
@@ -82,7 +86,12 @@ func (c *UserController) Register() {
 		return
 	}
 
-	department, err := models.GetDepartmentById(req.Department, false, false)
+	if errorsMap, err := helpers.ValidatePayloads(req); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, constants.ErrValidationMessage, errorsMap)
+		return
+	}
+
+	department, err := models.GetDepartmentById(req.DepartmentId, false, false)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid department ID", err)
 		return
@@ -94,15 +103,10 @@ func (c *UserController) Register() {
 		return
 	}
 
-	user := models.User{
-		Name:       req.Name,
-		Email:      req.Email,
-		Password:   hashedPassword,
-		Department: department,
-		Role:       constants.RoleEmployee, // default registered user is EMPLOYEE
-	}
+	user := req.ToUserModel(department)
+	user.Password = hashedPassword
 
-	if err := models.CreateUser(&user); err != nil {
+	if err := models.CreateUser(user); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to register user", err)
 		return
 	}
@@ -112,19 +116,24 @@ func (c *UserController) Register() {
 
 // @router /auth/login [post]
 func (c *UserController) Login() {
-	var credentials dto.LoginRequest
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &credentials); err != nil {
+	var req dto.LoginRequest
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input", err)
 		return
 	}
 
-	user, err := models.GetUserByEmail(credentials.Email)
+	if errorsMap, err := helpers.ValidatePayloads(req); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, constants.ErrValidationMessage, errorsMap)
+		return
+	}
+
+	user, err := models.GetUserByEmail(req.Email)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusUnauthorized, "Invalid credentials", nil)
 		return
 	}
 
-	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(credentials.Password)); err != nil {
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusUnauthorized, "Invalid credentials", nil)
 		return
 	}
@@ -140,31 +149,92 @@ func (c *UserController) Login() {
 
 // @router /users/:id [put]
 func (c *UserController) Update() {
-	id, _ := c.GetInt(":id")
+	userId, ok := c.Ctx.Input.GetData(constants.CtxAuthenticatedUserId).(int)
+	if !ok {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusUnauthorized, "Bad context", errors.New("can't retrieve user id from context"))
+		return
+	}
+
+	id, err := c.GetInt(":id")
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid user ID", err)
+		return
+	}
+
+	if userId != id {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusForbidden, "You are not allowed to update another user's data", errors.New("forbidden access"))
+		return
+	}
+
 	user, err := models.GetUserById(id, false)
 	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, "User not found", err)
 		return
 	}
 
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &user); err != nil {
-		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input", err)
+	var req dto.UserRequest
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input format", err)
 		return
 	}
 
-	if err := models.UpdateUser(user); err != nil {
+	if errorsMap, err := helpers.ValidatePayloads(req); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, constants.ErrValidationMessage, errorsMap)
+		return
+	}
+
+	department, err := models.GetDepartmentById(req.DepartmentId, false, false)
+	if department == nil && err != nil {
+		if err == orm.ErrNoRows {
+			helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch department with id %d", req.DepartmentId), fmt.Errorf("department '%d' not found", req.DepartmentId))
+			return
+		}
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch department with id %d", req.DepartmentId), err)
+		return
+	}
+
+	updatedUser := req.ToUserModel(user, department)
+
+	// Menyimpan perubahan ke database
+	if err := models.UpdateUser(updatedUser); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to update user", err)
 		return
 	}
-	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User updated successfully", map[string]interface{}{"users": dto.FromUserModelToUserResponse(user, false, false, false)})
+
+	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User updated successfully", map[string]interface{}{
+		"user": dto.FromUserModelToUserResponse(updatedUser, false, false, false),
+	})
 }
 
 // @router /users/:id [delete]
 func (c *UserController) Delete() {
-	id, _ := c.GetInt(":id")
-	if err := models.DeleteUser(id); err != nil {
+	userId, ok := c.Ctx.Input.GetData(constants.CtxAuthenticatedUserId).(int)
+	if !ok {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusUnauthorized, "Bad context", errors.New("can't retrieve user id from context"))
+		return
+	}
+
+	id, err := c.GetInt(":id")
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid user id", err)
+		return
+	}
+
+	if userId != id {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusForbidden, "You are not allowed to delete another user's data", errors.New("forbidden access"))
+		return
+	}
+
+	affectedRows, err := models.DeleteUser(id)
+	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to delete user", err)
 		return
 	}
+
+	if affectedRows == 0 {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, "User not found", fmt.Errorf("user '%d' not found", id))
+		return
+	}
+
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User deleted successfully", nil)
 }

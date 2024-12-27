@@ -6,18 +6,6 @@ import (
 	"github.com/snykk/beego-presence-api/models"
 )
 
-type RegisterRequest struct {
-	Name       string `json:"name"`
-	Email      string `json:"email"`
-	Password   string `json:"password"`
-	Department int    `json:"department"`
-}
-
-type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
 type RegisterResponse struct {
 	Id           int       `json:"id"`
 	Name         string    `json:"name"`
@@ -27,8 +15,8 @@ type RegisterResponse struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-func FromUserModelToRegisterResponse(u models.User) RegisterResponse {
-	return RegisterResponse{
+func FromUserModelToRegisterResponse(u *models.User) *RegisterResponse {
+	return &RegisterResponse{
 		Id:           u.Id,
 		Name:         u.Name,
 		Email:        u.Email,
@@ -51,13 +39,20 @@ type UserResponse struct {
 	UpdatedAt    time.Time           `json:"updated_at"`
 }
 
+func setScheduleIfNotNull(ms *models.Schedule) *int {
+	if ms != nil {
+		return &ms.Id
+	}
+	return nil
+}
+
 func FromUserModelToUserResponse(u *models.User, isIncludeDepartment, isIncludePresenceList, isIncludeSchedule bool) *UserResponse {
 	userResponse := &UserResponse{
 		Id:           u.Id,
 		Name:         u.Name,
 		Email:        u.Email,
 		DepartmentId: &u.Department.Id,
-		ScheduleId:   &u.Schedule.Id,
+		ScheduleId:   setScheduleIfNotNull(u.Schedule),
 		CreatedAt:    u.CreatedAt,
 		UpdatedAt:    u.UpdatedAt,
 	}
@@ -71,7 +66,7 @@ func FromUserModelToUserResponse(u *models.User, isIncludeDepartment, isIncludeP
 		userResponse.Presences = FromPresenceModelListToPresenceResponseList(u.Presences, false, true)
 	}
 
-	if isIncludeSchedule {
+	if isIncludeSchedule && u.Schedule != nil {
 		userResponse.ScheduleId = nil
 		userResponse.Schedule = FromScheduleModelToScheduleResponse(u.Schedule, false, false, false)
 	}

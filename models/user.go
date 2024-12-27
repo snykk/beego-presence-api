@@ -7,16 +7,16 @@ import (
 )
 
 type User struct {
-	Id         int         `orm:"auto" json:"id"`
-	Name       string      `orm:"size(100)" json:"name"`
-	Email      string      `orm:"size(100);unique" json:"email"`
-	Password   string      `orm:"size(255)" json:"-"`
-	Role       string      `orm:"size(10)" json:"role"`
-	Department *Department `orm:"rel(fk);column(department_id)" json:"department"`  // ForeignKey to Department
-	Presences  []*Presence `orm:"reverse(many)" json:"presences"`                   // Reverse relationship with Presence
-	Schedule   *Schedule   `orm:"null;rel(fk);column(schedule_id)" json:"schedule"` // ForeignKey to Schedule
-	CreatedAt  time.Time   `orm:"auto_now_add;type(datetime)" json:"created_at"`
-	UpdatedAt  time.Time   `orm:"auto_now;type(datetime)" json:"updated_at"`
+	Id         int         `orm:"auto"`
+	Name       string      `orm:"size(100)"`
+	Email      string      `orm:"size(100);unique"`
+	Password   string      `orm:"size(255)"`
+	Role       string      `orm:"size(10)"`
+	Department *Department `orm:"rel(fk);column(department_id)"`    // ForeignKey to Department
+	Presences  []*Presence `orm:"reverse(many)"`                    // Reverse relationship with Presence
+	Schedule   *Schedule   `orm:"null;rel(fk);column(schedule_id)"` // ForeignKey to Schedule
+	CreatedAt  time.Time   `orm:"auto_now_add;type(datetime)"`
+	UpdatedAt  time.Time   `orm:"auto_now;type(datetime)"`
 }
 
 // func init() {
@@ -90,8 +90,8 @@ func UpdateUser(user *User) error {
 	return err
 }
 
-func DeleteUser(id int) error {
+func DeleteUser(id int) (int64, error) {
 	o := orm.NewOrm()
-	_, err := o.Delete(&User{Id: id})
-	return err
+	affectedRows, err := o.Delete(&User{Id: id})
+	return affectedRows, err
 }

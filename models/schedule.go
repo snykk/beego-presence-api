@@ -7,15 +7,15 @@ import (
 )
 
 type Schedule struct {
-	Id         int         `orm:"auto" json:"id"`
-	Name       string      `orm:"size(100)" json:"name"`
-	Department *Department `orm:"rel(fk);column(department_id)" json:"department"` // ForeignKey to Department
-	InTime     string      `orm:"size(8)" json:"in_time"`
-	OutTime    string      `orm:"size(8)" json:"out_time"`
-	Presences  []*Presence `orm:"reverse(many)" json:"presences"` // Reverse relationship with Presence
-	Users      []*User     `orm:"reverse(many)" json:"users"`     // Reverse relationship with User
-	CreatedAt  time.Time   `orm:"auto_now_add;type(datetime)" json:"created_at"`
-	UpdatedAt  time.Time   `orm:"auto_now;type(datetime)" json:"updated_at"`
+	Id         int         `orm:"auto"`
+	Name       string      `orm:"size(100)"`
+	Department *Department `orm:"rel(fk);column(department_id)"` // ForeignKey to Department
+	InTime     string      `orm:"size(8)"`
+	OutTime    string      `orm:"size(8)"`
+	Presences  []*Presence `orm:"reverse(many)"` // Reverse relationship with Presence
+	Users      []*User     `orm:"reverse(many)"` // Reverse relationship with User
+	CreatedAt  time.Time   `orm:"auto_now_add;type(datetime)"`
+	UpdatedAt  time.Time   `orm:"auto_now;type(datetime)"`
 }
 
 // func init() {
