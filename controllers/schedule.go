@@ -2,12 +2,15 @@ package controllers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
+	"github.com/snykk/beego-presence-api/constants"
 	"github.com/snykk/beego-presence-api/dto"
 	"github.com/snykk/beego-presence-api/helpers"
 	"github.com/snykk/beego-presence-api/models"
 
+	"github.com/beego/beego/v2/client/orm"
 	beego "github.com/beego/beego/v2/server/web"
 )
 
@@ -74,11 +77,29 @@ func (c *ScheduleController) GetById() {
 
 // @router /schedules [post]
 func (c *ScheduleController) Create() {
-	var schedule *models.Schedule
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, schedule); err != nil {
+	var req dto.ScheduleRequest
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input", err)
 		return
 	}
+
+	if errorsMap, err := helpers.ValidatePayloads(req); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, constants.ErrValidationMessage, errorsMap)
+		return
+	}
+
+	department, err := models.GetDepartmentById(req.DepartmentId, false, false)
+	if department == nil && err != nil {
+		if err == orm.ErrNoRows {
+			helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch department with id %d", req.DepartmentId), fmt.Errorf("department '%d' not found", req.DepartmentId))
+			return
+		}
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch department with id %d", req.DepartmentId), err)
+		return
+	}
+
+	schedule := req.ToScheduleModel()
+	schedule.Department = department
 
 	if err := models.CreateSchedule(schedule); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to create schedule", err)
@@ -90,30 +111,64 @@ func (c *ScheduleController) Create() {
 // @router /schedules/:id [put]
 func (c *ScheduleController) Update() {
 	id, _ := c.GetInt(":id")
-	schedule, err := models.GetScheduleById(id, false, false)
-	if err != nil {
-		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, "Schedule not found", err)
-		return
-	}
-
-	if err := json.Unmarshal(c.Ctx.Input.RequestBody, schedule); err != nil {
+	var req dto.ScheduleRequest
+	if err := json.Unmarshal(c.Ctx.Input.RequestBody, &req); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid input", err)
 		return
 	}
 
-	if err := models.UpdateSchedule(schedule); err != nil {
+	if errorsMap, err := helpers.ValidatePayloads(req); err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, constants.ErrValidationMessage, errorsMap)
+		return
+	}
+
+	existedSchedule, err := models.GetScheduleById(id, false, false)
+	if existedSchedule == nil && err != nil {
+		if err == orm.ErrNoRows {
+			helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch schedule with id %d", id), fmt.Errorf("schedule '%d' not found", id))
+			return
+		}
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch schedule with id %d", id), err)
+		return
+	}
+
+	department, err := models.GetDepartmentById(req.DepartmentId, false, false)
+	if department == nil && err != nil {
+		if err == orm.ErrNoRows {
+			helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch department with id %d", req.DepartmentId), fmt.Errorf("department '%d' not found", req.DepartmentId))
+			return
+		}
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, fmt.Sprintf("Failed to fetch department with id %d", req.DepartmentId), err)
+		return
+	}
+
+	updatedSchedule := req.ToScheduleModelWithValue(existedSchedule, department)
+
+	if err := models.UpdateSchedule(updatedSchedule); err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to update schedule", err)
 		return
 	}
-	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Schedule updated successfully", dto.FromScheduleModelToScheduleResponse(schedule, false, false, false))
+	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Schedule updated successfully", dto.FromScheduleModelToScheduleResponse(updatedSchedule, false, false, false))
 }
 
 // @router /schedules/:id [delete]
 func (c *ScheduleController) Delete() {
-	id, _ := c.GetInt(":id")
-	if err := models.DeleteSchedule(id); err != nil {
+	id, err := c.GetInt(":id")
+	if err != nil {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusBadRequest, "Invalid schedule id", err)
+		return
+	}
+
+	affectedRows, err := models.DeleteSchedule(id)
+	if err != nil {
 		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusInternalServerError, "Failed to delete schedule", err)
 		return
 	}
+
+	if affectedRows == 0 {
+		helpers.ErrorResponse(c.Ctx.ResponseWriter, http.StatusNotFound, "Schedule not found", fmt.Errorf("schedule '%d' not found", id))
+		return
+	}
+
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Schedule deleted successfully", nil)
 }

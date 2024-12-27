@@ -90,8 +90,8 @@ func UpdateSchedule(schedule *Schedule) error {
 	return err
 }
 
-func DeleteSchedule(id int) error {
+func DeleteSchedule(id int) (int64, error) {
 	o := orm.NewOrm()
-	_, err := o.Delete(&Schedule{Id: id})
-	return err
+	affectedRows, err := o.Delete(&Schedule{Id: id})
+	return affectedRows, err
 }

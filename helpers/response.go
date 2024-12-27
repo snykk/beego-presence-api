@@ -9,7 +9,7 @@ type baseResponse struct {
 	Status  bool        `json:"status"`
 	Message string      `json:"message"`
 	Data    interface{} `json:"data,omitempty"`
-	Error   string      `json:"error,omitempty"`
+	Error   interface{} `json:"errors,omitempty"`
 }
 
 func SuccessResponse(w http.ResponseWriter, statusCode int, message string, data interface{}) {
@@ -24,18 +24,22 @@ func SuccessResponse(w http.ResponseWriter, statusCode int, message string, data
 	json.NewEncoder(w).Encode(response)
 }
 
-func ErrorResponse(w http.ResponseWriter, statusCode int, message string, err error) {
+func ErrorResponse(w http.ResponseWriter, statusCode int, message string, err interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	response := baseResponse{
+	if err != nil {
+		switch e := err.(type) {
+		case error:
+			err = e.Error()
+		default:
+			// No action required; keep err as is
+		}
+	}
+
+	json.NewEncoder(w).Encode(baseResponse{
 		Status:  false,
 		Message: message,
-	}
-
-	if err != nil {
-		response.Error = err.Error()
-	}
-
-	json.NewEncoder(w).Encode(response)
+		Error:   err,
+	})
 }
