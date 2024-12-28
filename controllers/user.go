@@ -29,7 +29,7 @@ func (c *UserController) URLMapping() {
 	c.Mapping("Delete", c.Delete)   // Maps DELETE /users/:id to Delete method for deleting a specific user by ID
 }
 
-// @Title Get All Users
+// @Title GetAll
 // @Description Fetch all users with optional related data (department, presence list, schedule)
 // @Accept  json
 // @Produce  json
@@ -71,7 +71,7 @@ func (c *UserController) GetAll() {
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Users retrieved successfully", dto.FromUserModelListToUserResponseList(users, isIncludeDepartment, isIncludePresenceList, isIncludeSchedule))
 }
 
-// @Title Get User By ID
+// @Title GetById
 // @Description Fetch a user by their ID with optional related data (department, presence list, schedule)
 // @Accept  json
 // @Produce  json
@@ -116,7 +116,7 @@ func (c *UserController) GetById() {
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User retrieved successfully", map[string]interface{}{"users": dto.FromUserModelToUserResponse(user, isIncludeDepartment, isIncludePresenceList, isIncludeSchedule)})
 }
 
-// @Title Update User
+// @Title Update
 // @Description Update an existing user's details
 // @Accept  json
 // @Produce  json
@@ -189,7 +189,7 @@ func (c *UserController) Update() {
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "User updated successfully", map[string]interface{}{"user": dto.FromUserModelToUserResponse(updatedUser, false, false, false)})
 }
 
-// @Title Delete User
+// @Title Delete
 // @Description Delete a user by ID
 // @Accept  json
 // @Produce  json

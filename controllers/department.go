@@ -30,7 +30,7 @@ func (c *DepartmentController) URLMapping() {
 	c.Mapping("Delete", c.Delete)   // Maps DELETE /departments/:id to Delete method for deleting a specific department by ID
 }
 
-// @Title Get All Departments
+// @Title GetAll
 // @Description Retrieve all departments, optionally including user and schedule lists.
 // @Produce  json
 // @Param   isIncludeUserList		query	bool	false		"Include user list in response"
@@ -69,7 +69,7 @@ func (c *DepartmentController) GetAll() {
 	)
 }
 
-// @Title Get Department By ID
+// @Title GetById
 // @Description Retrieve a department by its ID, optionally including user and schedule lists.
 // @Produce  json
 // @Param   id						path	int		true		"Department ID"
@@ -106,7 +106,7 @@ func (c *DepartmentController) GetById() {
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Department retrieved successfully", dto.FromDepartmentModelToDepartmentResponse(department, isIncludeUserList, isIncludeScheduleList))
 }
 
-// @Title Create New Department
+// @Title Create
 // @Description Create a new department.
 // @Accept  json
 // @Produce  json
@@ -140,7 +140,7 @@ func (c *DepartmentController) Create() {
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusCreated, "Department created successfully", dto.FromDepartmentModelToDepartmentResponse(department, false, false))
 }
 
-// @Title Update Department
+// @Title Update
 // @Description Update an existing department by ID.
 // @Accept  json
 // @Produce  json
@@ -188,7 +188,7 @@ func (c *DepartmentController) Update() {
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Department updated successfully", dto.FromDepartmentModelToDepartmentResponse(department, false, false))
 }
 
-// @Title Delete Department
+// @Title Delete
 // @Description Delete an existing department by ID.
 // @Param   id		path	int	true		"Department ID"
 // @Success 200 {string} "Department deleted successfully"

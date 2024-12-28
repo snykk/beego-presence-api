@@ -1,7 +1,15 @@
 // @APIVersion 1.0.0
-// @Title mobile API
-// @Description mobile has every tool to get any job done, so codename for the new mobile APIs.
-// @Contact astaxie@gmail.com
+// @Title Beego Presence API
+// @Description This API provides endpoints for managing presence, schedules, users, and departments.
+// @Contact najibfikri13@gmail.com
+// @TermsOfServiceUrl http://example.com/terms
+// @License MIT
+// @LicenseUrl https://github.com/snykk/beego-presence-api/blob/master/LICENSE
+// @Schemes http, https
+// @Host localhost:8080
+// @BasePath /api/v1
+// @Name Beego Presence API
+// @URL http://localhost:8080/api/v1
 package routers
 
 import (

@@ -30,7 +30,7 @@ func (c *ScheduleController) URLMapping() {
 	c.Mapping("Delete", c.Delete)   // Maps DELETE /schedules/:id to Delete method for deleting a specific schedule by ID
 }
 
-// @Title Get All Schedules
+// @Title GetAll
 // @Description Fetch all schedules with optional related data (department, user presence, user list)
 // @Accept  json
 // @Produce  json
@@ -72,7 +72,7 @@ func (c *ScheduleController) GetAll() {
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Schedules retrieved successfully", dto.FromScheduleModelListToScheduleResponseList(schedules, isIncludeDepartment, isIncludePresenceList, isIncludeUserList))
 }
 
-// @Title Get Schedule By ID
+// @Title GetById
 // @Description Fetch a schedule by its ID with optional related data (department, user presence, user list)
 // @Accept  json
 // @Produce  json
@@ -117,7 +117,7 @@ func (c *ScheduleController) GetById() {
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Schedule retrieved successfully", dto.FromScheduleModelToScheduleResponse(schedule, isIncludeDepartment, isIncludePresenceList, isIncludeUserList))
 }
 
-// @Title Create Schedule
+// @Title Create
 // @Description Create a new schedule based on the provided data
 // @Accept  json
 // @Produce  json
@@ -166,7 +166,7 @@ func (c *ScheduleController) Create() {
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusCreated, "Schedule created successfully", dto.FromScheduleModelToScheduleResponse(schedule, false, false, false))
 }
 
-// @Title Update Schedule
+// @Title Update
 // @Description Update an existing schedule by ID with the provided data
 // @Accept  json
 // @Produce  json
@@ -227,7 +227,7 @@ func (c *ScheduleController) Update() {
 	helpers.SuccessResponse(c.Ctx.ResponseWriter, http.StatusOK, "Schedule updated successfully", dto.FromScheduleModelToScheduleResponse(updatedSchedule, false, false, false))
 }
 
-// @Title Delete Schedule
+// @Title Delete
 // @Description Delete an existing schedule by ID
 // @Accept  json
 // @Produce  json

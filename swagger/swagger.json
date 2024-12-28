@@ -1,14 +1,26 @@
 {
     "swagger": "2.0",
     "info": {
-        "title": "mobile API",
-        "description": "mobile has every tool to get any job done, so codename for the new mobile APIs.\n",
+        "title": "Beego Presence API",
+        "description": "This API provides endpoints for managing presence, schedules, users, and departments.\n",
         "version": "1.0.0",
+        "termsOfService": "http://example.com/terms",
         "contact": {
-            "email": "astaxie@gmail.com"
+            "name": "Beego Presence API",
+            "url": "http://localhost:8080/api/v1",
+            "email": "najibfikri13@gmail.com"
+        },
+        "license": {
+            "name": "MIT",
+            "url": "https://github.com/snykk/beego-presence-api/blob/master/LICENSE"
         }
     },
+    "host": "localhost:8080",
     "basePath": "/api/v1",
+    "schemes": [
+        "http",
+        " https"
+    ],
     "paths": {
         "/auth/login": {
             "post": {
@@ -96,7 +108,7 @@
                     "departments"
                 ],
                 "description": "Retrieve all departments, optionally including user and schedule lists.\n\u003cbr\u003e",
-                "operationId": "DepartmentController.Get All Departments",
+                "operationId": "DepartmentController.GetAll",
                 "parameters": [
                     {
                         "in": "query",
@@ -131,7 +143,7 @@
                     "departments"
                 ],
                 "description": "Create a new department.\n\u003cbr\u003e",
-                "operationId": "DepartmentController.Create New Department",
+                "operationId": "DepartmentController.Create",
                 "consumes": [
                     "application/json"
                 ],
@@ -171,7 +183,7 @@
                     "departments"
                 ],
                 "description": "Retrieve a department by its ID, optionally including user and schedule lists.\n\u003cbr\u003e",
-                "operationId": "DepartmentController.Get Department By ID",
+                "operationId": "DepartmentController.GetById",
                 "parameters": [
                     {
                         "in": "path",
@@ -217,7 +229,7 @@
                     "departments"
                 ],
                 "description": "Update an existing department by ID.\n\u003cbr\u003e",
-                "operationId": "DepartmentController.Update Department",
+                "operationId": "DepartmentController.Update",
                 "consumes": [
                     "application/json"
                 ],
@@ -266,7 +278,7 @@
                     "departments"
                 ],
                 "description": "Delete an existing department by ID.\n\u003cbr\u003e",
-                "operationId": "DepartmentController.Delete Department",
+                "operationId": "DepartmentController.Delete",
                 "parameters": [
                     {
                         "in": "path",
@@ -511,7 +523,7 @@
                     "schedules"
                 ],
                 "description": "Fetch all schedules with optional related data (department, user presence, user list)\n\u003cbr\u003e",
-                "operationId": "ScheduleController.Get All Schedules",
+                "operationId": "ScheduleController.GetAll",
                 "consumes": [
                     "application/json"
                 ],
@@ -560,7 +572,7 @@
                     "schedules"
                 ],
                 "description": "Fetch a schedule by its ID with optional related data (department, user presence, user list)\n\u003cbr\u003e",
-                "operationId": "ScheduleController.Get Schedule By ID",
+                "operationId": "ScheduleController.GetById",
                 "consumes": [
                     "application/json"
                 ],
@@ -618,7 +630,7 @@
                     "schedules"
                 ],
                 "description": "Update an existing schedule by ID with the provided data\n\u003cbr\u003e",
-                "operationId": "ScheduleController.Update Schedule",
+                "operationId": "ScheduleController.Update",
                 "consumes": [
                     "application/json"
                 ],
@@ -667,7 +679,7 @@
                     "schedules"
                 ],
                 "description": "Delete an existing schedule by ID\n\u003cbr\u003e",
-                "operationId": "ScheduleController.Delete Schedule",
+                "operationId": "ScheduleController.Delete",
                 "consumes": [
                     "application/json"
                 ],
@@ -706,7 +718,7 @@
                     "schedules"
                 ],
                 "description": "Create a new schedule based on the provided data\n\u003cbr\u003e",
-                "operationId": "ScheduleController.Create Schedule",
+                "operationId": "ScheduleController.Create",
                 "consumes": [
                     "application/json"
                 ],
@@ -746,7 +758,7 @@
                     "users"
                 ],
                 "description": "Fetch all users with optional related data (department, presence list, schedule)\n\u003cbr\u003e",
-                "operationId": "UserController.Get All Users",
+                "operationId": "UserController.GetAll",
                 "consumes": [
                     "application/json"
                 ],
@@ -795,7 +807,7 @@
                     "users"
                 ],
                 "description": "Fetch a user by their ID with optional related data (department, presence list, schedule)\n\u003cbr\u003e",
-                "operationId": "UserController.Get User By ID",
+                "operationId": "UserController.GetById",
                 "consumes": [
                     "application/json"
                 ],
@@ -853,7 +865,7 @@
                     "users"
                 ],
                 "description": "Update an existing user's details\n\u003cbr\u003e",
-                "operationId": "UserController.Update User",
+                "operationId": "UserController.Update",
                 "consumes": [
                     "application/json"
                 ],
@@ -902,7 +914,7 @@
                     "users"
                 ],
                 "description": "Delete a user by ID\n\u003cbr\u003e",
-                "operationId": "UserController.Delete User",
+                "operationId": "UserController.Delete",
                 "consumes": [
                     "application/json"
                 ],
