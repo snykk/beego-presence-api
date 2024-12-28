@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/snykk/beego-presence-api/models"
 
@@ -40,5 +41,5 @@ func InitDB() {
 	// Run Seeder
 	RunAllSeeds()
 
-	fmt.Println("Daatbase connected successfully!")
+	log.Println("Daatbase connected successfully!")
 }

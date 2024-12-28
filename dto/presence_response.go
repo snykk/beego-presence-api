@@ -6,16 +6,18 @@ import (
 	"github.com/snykk/beego-presence-api/models"
 )
 
+// PresenceResponse represents the structure of a presence response
+// @Description PresenceResponse represents the structure of a presence response
 type PresenceResponse struct {
-	Id         int               `json:"id"`
-	UserId     *int              `json:"user_id,omitempty"`
-	User       *UserResponse     `json:"user,omitempty"`
-	Scheduleid *int              `json:"schedule_id,omitempty"`
-	Schedule   *ScheduleResponse `json:"schedule,omitempty"`
-	Type       string            `json:"type"`
-	Status     string            `json:"status"`
-	CreatedAt  time.Time         `json:"created_at"`
-	UpdatedAt  time.Time         `json:"updated_at"`
+	Id         int               `json:"id" example:"1"` // Presence ID
+	UserId     *int              `json:"user_id,omitempty" example:"1"`
+	User       *UserResponse     `json:"user,omitempty" example:"1"`
+	Scheduleid *int              `json:"schedule_id,omitempty" example:"1"`
+	Schedule   *ScheduleResponse `json:"schedule,omitempty" example:"1"`
+	Type       string            `json:"type" example:"in"`                         // Presence type
+	Status     string            `json:"status" example:"ontime"`                   // Presence status
+	CreatedAt  time.Time         `json:"created_at" example:"2024-12-01T00:00:00Z"` // Creation timestamp
+	UpdatedAt  time.Time         `json:"updated_at" example:"2024-12-02T00:00:00Z"` // Last update timestamp
 }
 
 func FromPresenceModelToPresenceResponse(u *models.Presence, isIncludeUser, isIncludeSchedule bool) *PresenceResponse {

@@ -8,6 +8,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 )
 
+var jwtIssuer = "beego-presence-api"
 var jwtSecret = []byte("my-secret-tralalala")
 
 // GenerateJWT generates a JWT token for a user with the given role
@@ -18,6 +19,7 @@ func GenerateJWT(userId int, email, role string) (string, error) {
 		"role":  role,
 		"exp":   time.Now().Add(time.Hour * 24).Unix(),
 		"iat":   time.Now().Unix(),
+		"iss":   jwtIssuer,
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

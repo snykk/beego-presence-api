@@ -5,18 +5,18 @@ import (
 	"net/http"
 )
 
-type baseResponse struct {
-	Status  bool        `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data,omitempty"`
-	Error   interface{} `json:"errors,omitempty"`
+type BaseResponse struct {
+	Status  bool        `json:"status"`           // Indicates success or failure
+	Message string      `json:"message"`          // Response message
+	Data    interface{} `json:"data,omitempty"`   // Actual response data
+	Error   interface{} `json:"errors,omitempty"` // Error details, if any
 }
 
 func SuccessResponse(w http.ResponseWriter, statusCode int, message string, data interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(statusCode)
 
-	response := baseResponse{
+	response := BaseResponse{
 		Status:  true,
 		Message: message,
 		Data:    data,
@@ -37,7 +37,7 @@ func ErrorResponse(w http.ResponseWriter, statusCode int, message string, err in
 		}
 	}
 
-	json.NewEncoder(w).Encode(baseResponse{
+	json.NewEncoder(w).Encode(BaseResponse{
 		Status:  false,
 		Message: message,
 		Error:   err,

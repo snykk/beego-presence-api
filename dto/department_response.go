@@ -6,13 +6,15 @@ import (
 	"github.com/snykk/beego-presence-api/models"
 )
 
+// DepartmentResponse represents the structure of a department response
+// @Description DepartmentResponse represents the structure of a department response
 type DepartmentResponse struct {
-	Id        int                 `json:"id"`
-	Name      string              `json:"name"`
-	Users     []*UserResponse     `json:"users,omitempty"`
-	Schedules []*ScheduleResponse `json:"schedules,omitempty"`
-	CreatedAt time.Time           `json:"created_at"`
-	UpdatedAt time.Time           `json:"updated_at"`
+	Id        int                 `json:"id" example:"1"`                            // Department ID
+	Name      string              `json:"name" example:"Human Resources"`            // Department name
+	Users     []*UserResponse     `json:"users,omitempty"`                           // List of users in the department
+	Schedules []*ScheduleResponse `json:"schedules,omitempty"`                       // List of schedules for the department
+	CreatedAt time.Time           `json:"created_at" example:"2023-01-01T00:00:00Z"` // Creation timestamp
+	UpdatedAt time.Time           `json:"updated_at" example:"2023-01-02T00:00:00Z"` // Last update timestamp
 }
 
 func FromDepartmentModelToDepartmentResponse(d *models.Department, isIncludeUserList, isIncludeScheduleList bool) *DepartmentResponse {

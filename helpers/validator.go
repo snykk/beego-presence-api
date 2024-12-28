@@ -43,8 +43,6 @@ func ValidatePayloads(payload interface{}) (map[string]string, error) {
 			value := e.Value()
 			param := e.Param()
 
-			fmt.Println(field, tag, value, param)
-
 			if value != "" {
 				value = fmt.Sprintf("'%s' ", value)
 			}

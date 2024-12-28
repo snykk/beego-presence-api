@@ -33,11 +33,11 @@ func SeedDepartments() {
 			if err != nil {
 				log.Printf("Failed to seed department %s: %v", dept.Name, err)
 			} else {
-				fmt.Printf("Seeded department: %s\n", dept.Name)
+				log.Printf("Seeded department: %s\n", dept.Name)
 			}
 		}
 	} else {
-		fmt.Println("Departments table already seeded.")
+		log.Println("Departments table already seeded.")
 	}
 }
 
@@ -63,9 +63,9 @@ func SeedUsers() {
 				log.Printf("Failed to ensure department %s exists: %v", deptName, err)
 			} else {
 				if created {
-					fmt.Printf("Created department: %s\n", dept.Name)
+					log.Printf("Created department: %s\n", dept.Name)
 				} else {
-					fmt.Printf("Department already exists: %s\n", dept.Name)
+					log.Printf("Department already exists: %s\n", dept.Name)
 				}
 			}
 			departments = append(departments, dept)
@@ -99,14 +99,15 @@ func SeedUsers() {
 			if err != nil {
 				log.Printf("Failed to seed user %s: %v", user.Name, err)
 			} else {
-				fmt.Printf("Seeded user: %s in department: %s\n", user.Name, user.Department.Name)
+				log.Printf("Seeded user: %s in department: %s\n", user.Name, user.Department.Name)
 			}
 		}
 	} else {
-		fmt.Println("Users table already seeded.")
+		log.Println("Users table already seeded.")
 	}
 }
 
+// assignScheduleToUser assigns a schedule to a user based on the user's department
 func assignScheduleToUser(user *models.User, o orm.Ormer) error {
 	if user.Department == nil {
 		return fmt.Errorf("user %s does not have a department", user.Name)
@@ -128,6 +129,7 @@ func assignScheduleToUser(user *models.User, o orm.Ormer) error {
 	return nil
 }
 
+// SeedSchedules populates the schedules table if it's empty
 func SeedSchedules() {
 	o := orm.NewOrm()
 
@@ -169,14 +171,15 @@ func SeedSchedules() {
 			if err != nil {
 				log.Printf("Failed to seed schedule %s: %v", schedule.Name, err)
 			} else {
-				fmt.Printf("Seeded schedule: %s for department: %s\n", schedule.Name, schedule.Department.Name)
+				log.Printf("Seeded schedule: %s for department: %s\n", schedule.Name, schedule.Department.Name)
 			}
 		}
 	} else {
-		fmt.Println("Schedules table already seeded.")
+		log.Println("Schedules table already seeded.")
 	}
 }
 
+// RunAllSeeds runs all the seed functions
 func RunAllSeeds() {
 	SeedDepartments()
 	SeedSchedules()

@@ -2,8 +2,10 @@ package dto
 
 import "github.com/snykk/beego-presence-api/models"
 
+// DepartmentRequest represents the structure of a department request
+// @Description DepartmentRequest represents the structure of a department request
 type DepartmentRequest struct {
-	Name string `json:"name" validate:"required"`
+	Name string `json:"name" validate:"required" example:"Human Resources"` // Department name
 }
 
 func (d *DepartmentRequest) ToDepartmentModel() *models.Department {
